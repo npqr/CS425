@@ -61,7 +61,7 @@ void create_group(cstr group_name, cstr username, ci client_socket) {
         users[username].insert(group_name);
         send_message("Group " + group_name + " created.\n", client_socket);
     } else {
-        send_message("Error: Group " + group_name + " already exists.\n", client_socket);
+        send_message("Error: Group " + group_name + " already exists!\n", client_socket);
     }
 }
 
@@ -77,7 +77,7 @@ void join_group(cstr group_name, cstr username, ci client_socket) {
                 send_message("User " + username + " joined group " + group_name + ".", member);
         }
     } else {
-        send_message("Error: Group " + group_name + " does not exist.\n", client_socket);
+        send_message("Error: Group " + group_name + " does not exist!\n", client_socket);
     }
 }
 
@@ -94,10 +94,10 @@ void leave_group(cstr group_name, cstr username, ci client_socket) {
         send_message("Left group " + group_name + ".\n", client_socket);
         for (auto &member : groups[group_name]) {
             if (member != client_socket)
-                send_message("User " + username + " left the group.", member);
+                send_message("User " + username + " left the group" + group_name + ".", member);
         }
     } else {
-        send_message("Error: Group " + group_name + " does not exist.\n", client_socket);
+        send_message("Error: Group " + group_name + " does not exist!\n", client_socket);
     }
 }
 
@@ -120,18 +120,18 @@ void private_message(cstr recipient, cstr message, ci sender_socket) {
             return;
         }
     }
-    send_message("Error: User not found.\n", sender_socket);
+    send_message("Error: User " + recipient + " not found!\n", sender_socket);
 }
 
 // Send a message to all members of a group
 void group_message(cstr group_name, cstr message, ci sender_socket) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     if (groups.find(group_name) == groups.end()) {
-        send_message("Error: Group does not exist.\n", sender_socket);
+        send_message("Error: Group does not exist!\n", sender_socket);
         return;
     }
     if (groups[group_name].find(sender_socket) == groups[group_name].end()) {
-        send_message("Error: You are not a member of this group.\n", sender_socket);
+        send_message("Error: You are not a member of this group!\n", sender_socket);
         return;
     }
     for (int socket : groups[group_name]) {
@@ -172,11 +172,11 @@ void list_groups(cstr username, ci client_socket) {
 // List all members of a group
 void list_members(cstr group_name, ci client_socket) {
     if (groups.find(group_name) == groups.end()) {
-        send_message("Error: Group " + group_name + " does not exist.\n", client_socket);
+        send_message("Error: Group " + group_name + " does not exist!\n", client_socket);
         return;
     }
     if (groups[group_name].find(client_socket) == groups[group_name].end()) {
-        send_message("Denied: You are not a member of this group.\n", client_socket);
+        send_message("Error: You are not a member of this group!\n", client_socket);
         return;
     }
     std::string members = "Members of group " + group_name + ":\n";
@@ -207,12 +207,17 @@ void handle_client(ci client_socket) {
     send_message("Enter username: ", client_socket);
     memset(buffer, 0, BUFFER_SIZE);
     recv(client_socket, buffer, BUFFER_SIZE, 0);
+    // std::cout << "BBBBBBB" << buffer << "CCCCCCC\n";
     std::string username = trim(buffer);
+    // std::cout << "@@@@@@" << username << "$$$$$$$\n";
+
 
     send_message("Enter password: ", client_socket);
     memset(buffer, 0, BUFFER_SIZE);
     recv(client_socket, buffer, BUFFER_SIZE, 0);
+    // std::cout << "DDDDDDD" << buffer << "EEEEEEE\n";
     std::string password = trim(buffer);
+    // std::cout << "#######" << password << "^^^^^^^^\n";
 
     if ((user_credentials.find(username) == user_credentials.end()) || (user_credentials[username] != password)) {
         send_message("Authentication failed.\n", client_socket);
@@ -225,7 +230,7 @@ void handle_client(ci client_socket) {
         std::lock_guard<std::mutex> lock(clients_mutex);
         for (const auto &[socket, user] : clients) {
             if (user == username) {
-                send_message("User already connected.\n", client_socket);
+                send_message("Error: User already connected!\n", client_socket);
                 close(client_socket);
                 return;
             }
@@ -282,8 +287,10 @@ void handle_client(ci client_socket) {
 
             if (cmd == "/list_members") {
                 list_members(group_name, client_socket);
-            } else {
+            } else if(cmd == "/group_msg") {
                 grpcmd[cmd](group_name, message, client_socket);
+            } else {
+                grpcmd[cmd](group_name, username, client_socket);
             }
         } else if (cmd == "/list_groups") {
             list_groups(username, client_socket);
@@ -301,7 +308,7 @@ void handle_client(ci client_socket) {
             close(client_socket);
             break;
         } else {
-            send_message("Error: Unknown command. Run /list_commands to know the list of commands!\n", client_socket);
+            send_message("Error: Unknown command ( " + cmd.substr(0, 10) + ((cmd.size() > 10) ? "... " : " ") + "). Run /list_commands to know the list of commands!\n", client_socket);
         }
     }
 }
@@ -325,7 +332,7 @@ int main() {
 
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0) {
-        std::cerr << "Error creating socket." << std::endl;
+        std::cerr << "Error: Cannot create socket." << std::endl;
         return 1;
     }
 
@@ -334,13 +341,13 @@ int main() {
     server_address.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(server_socket, (sockaddr *)&server_address, sizeof(server_address)) < 0) {
-        std::cerr << "Error binding socket." << std::endl;
+        std::cerr << "Error: Cannot bind socket." << std::endl;
         close(server_socket);
         return 1;
     }
 
     if (listen(server_socket, 5) < 0) {
-        std::cerr << "Error listening on socket." << std::endl;
+        std::cerr << "Error: Cannot listen on socket." << std::endl;
         close(server_socket);
         return 1;
     }
@@ -357,7 +364,7 @@ int main() {
 
         if (activity == -1) {
             if (running)
-                std::cerr << "Select Error" << std::endl;
+                std::cerr << "Error: select error." << std::endl;
             break;
         }
 
@@ -366,7 +373,7 @@ int main() {
             socklen_t client_len = sizeof(client_address);
             int client_socket = accept(server_socket, (sockaddr *)&client_address, &client_len);
             if (client_socket < 0) {
-                std::cerr << "Error accepting client connection." << std::endl;
+                std::cerr << "Error: Cannot accept client connection." << std::endl;
                 continue;
             }
 
