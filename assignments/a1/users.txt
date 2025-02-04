@@ -4,7 +4,6 @@ charlie:secure789
 david:helloWorld!
 eve:trustno1
 frank:letmein
-grace:passw0rd
 user1:password1
 user2:password2
 user3:password3

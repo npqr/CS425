@@ -1,0 +1,31 @@
+././build/server_grp_test
+[==========] Running 11 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 11 tests from ServerGrpTest
+[ RUN      ] ServerGrpTest.LoadCredentials
+[       OK ] ServerGrpTest.LoadCredentials (0 ms)
+[ RUN      ] ServerGrpTest.SendAndReceiveMessage
+[       OK ] ServerGrpTest.SendAndReceiveMessage (0 ms)
+[ RUN      ] ServerGrpTest.CreateGroup
+[       OK ] ServerGrpTest.CreateGroup (0 ms)
+[ RUN      ] ServerGrpTest.JoinGroup
+[       OK ] ServerGrpTest.JoinGroup (0 ms)
+[ RUN      ] ServerGrpTest.LeaveGroup
+[       OK ] ServerGrpTest.LeaveGroup (0 ms)
+[ RUN      ] ServerGrpTest.BroadcastMessage
+[       OK ] ServerGrpTest.BroadcastMessage (0 ms)
+[ RUN      ] ServerGrpTest.PrivateMessage
+[       OK ] ServerGrpTest.PrivateMessage (0 ms)
+[ RUN      ] ServerGrpTest.GroupMessage
+[       OK ] ServerGrpTest.GroupMessage (0 ms)
+[ RUN      ] ServerGrpTest.ListCommands
+[       OK ] ServerGrpTest.ListCommands (0 ms)
+[ RUN      ] ServerGrpTest.ListGroups
+[       OK ] ServerGrpTest.ListGroups (0 ms)
+[ RUN      ] ServerGrpTest.ListMembers
+[       OK ] ServerGrpTest.ListMembers (0 ms)
+[----------] 11 tests from ServerGrpTest (2 ms total)
+
+[----------] Global test environment tear-down
+[==========] 11 tests from 1 test suite ran. (2 ms total)
+[  PASSED  ] 11 tests.

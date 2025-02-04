@@ -1,4 +1,49 @@
-# README
+# CS425 A1: Chat Server with Groups and Private Messages
+
+## Directory Structure
+
+(after running `make` in the root directory, and `make` in the `tests` directory)
+
+```
+a1/
+├── README.md
+├── Makefile
+├── server_grp.cpp
+├── client_grp.cpp
+├── server_grp.h
+├── server_grp.o
+├── server_grp
+├── client_grp
+├── users.txt
+└── tests/
+    ├── README.md
+    ├── build/
+    │   ├── googletest
+    │   └── server_grp_test
+    ├── Makefile
+    ├── server_grp_test.cpp
+    ├── server_grp_test.h
+    ├── server_grp_test.o
+    ├── test_log (output of unit test results)
+    ├── users.txt.bak (backup of users.txt)
+    └── client.sh
+```
+
+## How to Run
+
+### Prerequisites
+
+- Ensure you have `g++` installed on your system. (compiled with C++20)
+- Ensure you have `make` installed on your system.
+
+For testing:
+- Ensure you have googletest installed on your system.
+- Ensure you have `nc` installed on your system.
+- Ensure you have `xargs` installed on your system.
+
+### Running
+
+After running `make` in the root directory, run `./server_grp` and `./client_grp` in separate terminals to start the server and client, respectively.
 
 ## Features
 
@@ -45,58 +90,86 @@
 - Uses the `select()` [(ref)](https://beej.us/guide/bgnet/html/split/slightly-advanced-techniques.html#select) system call to handle multiple client connections.
 - Ensures that the server can handle multiple clients without blocking on I/O operations.
 
+### Naming Constraints
+- All usernames and group names are case-sensitive alphanumeric strings.
+- Group names cannot contain spaces to simplify parsing of commands.
+- Usernames cannot contain spaces to simplify authentication and message routing.
+
 ## Implementation
 
-### High-Level Idea of Important Functions
-- **`load_credentials`**: Loads user credentials from `users.txt`.
-- **`send_message`**: Sends a message to a specific client.
-- **`create_group`**: Creates a new group and adds the client to it.
-- **`join_group`**: Adds a client to an existing group.
-- **`leave_group`**: Removes a client from a group.
-- **`broadcast_message`**: Sends a message to all connected clients.
-- **`private_message`**: Sends a private message to a specific user.
-- **`group_message`**: Sends a message to all members of a group.
-- **`list_commands`**: Lists all available commands.
-- **`list_groups`**: Lists all groups a user is a member of.
-- **`list_members`**: Lists all members of a group.
-- **`handle_client`**: Handles client connection and processes commands.
-- **`sigint_handler`**: Handles graceful shutdown of the server.
+### Global Variables and Data Structures
 
-### Code Flow
+   - `clients_mutex`: A mutex to ensure thread-safe access to shared resources.
+   - `clients`: A map that associates client sockets with usernames.
+   - `groups`: A map that associates group names with sets of client sockets.
+   - `user_credentials`: A map that stores username-password pairs for authentication.
+   - `users`: A map that associates usernames with sets of group names.
 
-1. **Server Initialization**:
-   - Load user credentials.
-   - Create a server socket and bind it to a port.
-   - Listen for incoming connections.
-2. **Client Connection**:
-   - Accept incoming client connections.
-   - Create a new thread to handle each client.
-3. **Client Handling**:
-   - Authenticate the client.
-   - Process client commands (broadcast, private message, group message, etc.).
-   - Handle client disconnection.
-4. **Graceful Shutdown**:
-   - Handle `SIGINT` signal to shut down the server gracefully.
+### Utility Functions
+
+   - `trim`: Trims leading and trailing whitespaces from a string.
+   - `load_credentials`: Loads user credentials from a file named `users.txt`.
+
+### Group Management Functions
+
+   - `create_group`: Creates a new group and adds the client to it.
+   - `join_group`: Adds a client to an existing group.
+   - `leave_group`: Removes a client from a group.
+   - `broadcast_message`: Broadcasts a message to all connected clients.
+   - `private_message`: Sends a private message to a specific user.
+   - `group_message`: Sends a message to all members of a group.
+   - `list_commands`: Lists all available commands.
+   - `list_groups`: Lists all groups a user is a member of.
+   - `list_members`: Lists all members of a group.
+   - `grpcmd`: A map that associates group commands with their corresponding handler functions.
+
+## Code Flow
+
+1. **Initialization**:
+   - The server initializes global variables and data structures.
+   - The `load_credentials()` function loads user credentials from `users.txt`.
+
+2. **Server Setup**:
+   - The `main()` function sets up the `SIGINT` signal handler.
+   - The server socket is created, bound to a port, and set to listen for incoming connections.
+
+3. **Client Connection Handling**:
+   - The server enters a loop where it uses `select()` to monitor the server socket for incoming connections.
+   - When a new client connection is detected, the server accepts the connection and creates a new thread to handle the client using the `handle_client()` function.
+
+4. **Client Authentication and Command Handling**:
+   - The `handle_client()` function authenticates the client by prompting for a username and password.
+   - The client is added to the list of connected clients.
+   - The server enters a loop where it listens for commands from the client and processes them accordingly (e.g., broadcasting messages, sending private messages, group messaging, listing commands, groups, and members).
+   - Upon client disconnection, the client is removed from the list of connected clients and groups.
+
+5. **Graceful Shutdown**:
+   - When the server receives a `SIGINT` signal, the `sigint_handler()` function sets the `running` flag to `false`.
+   - The `main()` function exits the loop, broadcasts a shutdown message to all clients, and closes the server socket.
 
 ## Testing
 
+Testing was carried on an Arch Linux machine and a macOS machine.
+
 ### Correctness Testing
-- Used Google Test framework for unit testing various components of the server.
+- Used [Google Test framework](https://google.github.io/googletest/) for unit testing various components of the server.
 - Tested basic server functionality by connecting multiple clients and verifying message delivery.
-- Verified user authentication by testing with valid and invalid credentials.
-- Tested group management features by creating, joining, and leaving groups.
-- Verified message broadcasting and private messaging.
+- Tested the correctness of authentication, message broadcasting, group management, and private messaging features.
+- Manually tested edge cases like invalid commands, incorrect group names, and invalid usernames and invalid situations like sending messages to non-existent users, leaving non-existent groups, etc.
 
 ### Stress Testing
-- Used `xargs` to send multiple requests simultaneously to test server concurrency and performance.
+- Created 50 dummy clients and simulated their connections using `nc` and `xargs` to send multiple requests simultaneously to test server concurrency and performance.
+- Additionally, manually tested the server with 10+ clients connected concurrently. 
 
 ## Challenges
 
 ### Design Challenges
-- Initially considered using processes for each connection but opted for threads due to lower overhead and easier shared resource management.
+- Initially, the data structure for storing group information handled clients by their socket descriptors and not their usernames.
+- Resolved by storing the mapping of usernames and list of group names in a separate data structure.
 - Ensured thread-safe access to shared resources using `std::mutex` and `std::lock_guard`.
 
 ### Implementation Challenges
+- Encountered blocking issues, resolved by using `select()` to handle multiple client connections.
 - Faced issues with thread synchronization, resolved by carefully locking shared resources.
 - Debugged issues with client disconnection handling and ensured proper cleanup of resources.
 
@@ -106,21 +179,19 @@
 - **Maximum Clients**: Limited by system resources and thread handling capacity.
 - **Maximum Groups**: Limited by system memory.
 - **Maximum Group Members**: Limited by system memory.
-- **Message Size**: Limited to `BUFFER_SIZE` (1024 bytes).
+- **Message Size**: Limited to `BUFFER_SIZE` (1024 bytes), can be increased if required.
 
 ## Individual Contributions
 
-### Contribution of Member 1
+### Contribution of Member 1 (Khushi Gupta, 220531)
 - Designed and implemented the server architecture.
-- Handled user authentication and message broadcasting features.
+- Implemented the core server functionality.
+- Handled authentication, message broadcasting and group management.
 
-### Contribution of Member 2
-- Implemented group management features.
-- Handled client connection and disconnection logic.
-
-### Contribution of Member 3
+### Contribution of Member 2 (Nevish Pathe, 220757)
+- Handled command parsing, concurrency and thread management.
 - Conducted testing and debugging.
-- Prepared the README and documentation.
+- Prepared the README.
 
 ## Sources
 - Beej's Guide to Network Programming: https://beej.us/guide/bgnet/
@@ -131,5 +202,5 @@
 We declare that we did not indulge in plagiarism and the work submitted is our own.
 
 ## Feedback
-- The assignment was challenging and provided a good learning experience in network programming and multithreading.
-- Suggest providing more examples and edge cases for testing.
+- The assignment was a nice exercise in socket programming and multithreading.
+- The project could be extended to include more advanced features like offline messaging and persistent storage.

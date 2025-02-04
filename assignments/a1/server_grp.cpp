@@ -207,17 +207,12 @@ void handle_client(ci client_socket) {
     send_message("Enter username: ", client_socket);
     memset(buffer, 0, BUFFER_SIZE);
     recv(client_socket, buffer, BUFFER_SIZE, 0);
-    // std::cout << "BBBBBBB" << buffer << "CCCCCCC\n";
     std::string username = trim(buffer);
-    // std::cout << "@@@@@@" << username << "$$$$$$$\n";
-
 
     send_message("Enter password: ", client_socket);
     memset(buffer, 0, BUFFER_SIZE);
     recv(client_socket, buffer, BUFFER_SIZE, 0);
-    // std::cout << "DDDDDDD" << buffer << "EEEEEEE\n";
     std::string password = trim(buffer);
-    // std::cout << "#######" << password << "^^^^^^^^\n";
 
     if ((user_credentials.find(username) == user_credentials.end()) || (user_credentials[username] != password)) {
         send_message("Authentication failed.\n", client_socket);
@@ -313,8 +308,10 @@ void handle_client(ci client_socket) {
     }
 }
 
+// atomic variable for storing the server state
 std::atomic<bool> running(true);
 
+// Signal handler for SIGINT
 void sigint_handler(int signum) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     std::cout << "Server shutting down..." << std::endl;
