@@ -17,15 +17,15 @@ a1/
 ├── users.txt
 └── tests/
     ├── README.md
-    ├── build/
-    │   ├── googletest
-    │   └── server_grp_test
     ├── Makefile
+    ├── googletest/
     ├── server_grp_test.cpp
     ├── server_grp_test.h
     ├── server_grp_test.o
     ├── test_log (output of unit test results)
     ├── users.txt.bak (backup of users.txt)
+    ├── build_gtest.sh
+    ├── make_dummy_users.sh
     └── client.sh
 ```
 

@@ -14,7 +14,6 @@ TEST_OBJS = server_grp_test.o
 TARGET = server_grp_test
 
 all: $(TARGET)
-	./build_gtest.sh
 
 google:
 	./build_gtest.sh
