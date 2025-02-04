@@ -4,7 +4,7 @@ Tested on Arch Linux and macOS.
 
 The directory contains a google test suite and a stress test script.
 
-- Run `make test` to run the google test suite.
+- Run `make all` and then `make test` to run the google test suite.
 - Run `make_dummy_users.sh` to add dummy users to the `users.txt` file.
 - Run `client.sh` using xargs to run the stress test script (more details in the script).
 

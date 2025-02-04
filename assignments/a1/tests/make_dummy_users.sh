@@ -17,3 +17,5 @@ for i in {1..50}
 do
     echo "user$i:password$i" >> ../users.txt 
 done
+
+echo "Added 50 Dummy Users!"

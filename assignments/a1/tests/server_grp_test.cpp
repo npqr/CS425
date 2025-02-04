@@ -3,8 +3,8 @@
 #endif
 
 #include <arpa/inet.h>
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>

@@ -1,6 +1,7 @@
 *.out
 *.o
 
+**/googletest/
 **/build/
 **/.vscode
 */.vscode
