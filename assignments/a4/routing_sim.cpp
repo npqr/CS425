@@ -40,32 +40,37 @@ void simulateDVR(const vector<vector<int>>& graph) {
     cout << "--- DVR Iteration 0 ---\n";
     for (int i = 0; i < n; ++i) printDVRTable(i, dist, nextHop);
 
-    // Iterative Bellman-Ford updates
+    // Start the distance vector algorithm
     bool updated = true;
     int iteration = 1;
     while (updated) {
         updated = false;
+        // Create new tables for this iteration
+        vector<vector<int>> newDist = dist;
+        vector<vector<int>> newNextHop = nextHop;
         for (int u = 0; u < n; ++u) {
             for (int v = 0; v < n; ++v) {
-                if (graph[u][v] == INF || u == v) continue;
                 for (int w = 0; w < n; ++w) {
-                    if (dist[v][w] == INF) continue;
-                    int newCost = graph[u][v] + dist[v][w];
-                    if (newCost < dist[u][w]) {
-                        dist[u][w] = newCost;
-                        nextHop[u][w] = nextHop[u][v];
+                    if (dist[u][v] + graph[v][w] < dist[u][w]) {
+                        // Update distance and next hop
+                        newDist[u][w] = dist[u][v] + graph[v][w];
+                        newNextHop[u][w] = nextHop[u][v];
                         updated = true;
                     }
                 }
             }
         }
+        // Update the original tables with new values
+        dist = newDist;
+        nextHop = newNextHop;
+        // Check if any updates were made
         if (updated) {
             cout << "--- DVR Iteration " << iteration << " ---\n";
             for (int i = 0; i < n; ++i) printDVRTable(i, dist, nextHop);
             ++iteration;
         }
     }
-
+    // Final tables
     cout << "--- DVR Final Tables ---\n";
     for (int i = 0; i < n; ++i) printDVRTable(i, dist, nextHop);
 }
@@ -100,6 +105,7 @@ void simulateLSR(const vector<vector<int>>& graph) {
         priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> pq;
         pq.push(make_pair(0, src));
 
+        // Dijkstra's algorithm
         while (!pq.empty()) {
             pair<int,int> top = pq.top(); pq.pop();
             int d = top.first;
