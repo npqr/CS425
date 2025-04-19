@@ -15,7 +15,7 @@ void printDVRTable(int node, const vector<vector<int>>& table, const vector<vect
     cout << "Dest\tCost\tNext Hop\n";
     for (int i = 0; i < table.size(); ++i) {
         cout << i << "\t" << table[node][i] << "\t";
-        if (i == node || nextHop[node][i] == -1) cout << "-";
+        if (nextHop[node][i] == -1) cout << "-";
         else cout << nextHop[node][i];
         cout << endl;
     }
@@ -27,7 +27,7 @@ void simulateDVR(const vector<vector<int>>& graph) {
     vector<vector<int>> dist = graph;
     vector<vector<int>> nextHop(n, vector<int>(n, -1));
 
-    // Initialization of next hops
+    // initialization of next hops
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
             if (i != j && graph[i][j] != INF) {
@@ -36,23 +36,23 @@ void simulateDVR(const vector<vector<int>>& graph) {
         }
     }
 
-    // Print initial tables
     cout << "--- DVR Iteration 0 ---\n";
     for (int i = 0; i < n; ++i) printDVRTable(i, dist, nextHop);
 
-    // Start the distance vector algorithm
+    // start the DVR algorithm
     bool updated = true;
     int iteration = 1;
     while (updated) {
         updated = false;
-        // Create new tables for this iteration
+
+        // create new tables for this iteration
         vector<vector<int>> newDist = dist;
         vector<vector<int>> newNextHop = nextHop;
         for (int u = 0; u < n; ++u) {
             for (int v = 0; v < n; ++v) {
                 for (int w = 0; w < n; ++w) {
                     if (dist[u][v] + graph[v][w] < dist[u][w]) {
-                        // Update distance and next hop
+                        // update distance and next hop
                         newDist[u][w] = dist[u][v] + graph[v][w];
                         newNextHop[u][w] = nextHop[u][v];
                         updated = true;
@@ -60,17 +60,20 @@ void simulateDVR(const vector<vector<int>>& graph) {
                 }
             }
         }
-        // Update the original tables with new values
+
+        // update the original tables with new values
         dist = newDist;
         nextHop = newNextHop;
-        // Check if any updates were made
+
+        // check if any updates were made
         if (updated) {
             cout << "--- DVR Iteration " << iteration << " ---\n";
             for (int i = 0; i < n; ++i) printDVRTable(i, dist, nextHop);
             ++iteration;
         }
     }
-    // Final tables
+
+    // final tables
     cout << "--- DVR Final Tables ---\n";
     for (int i = 0; i < n; ++i) printDVRTable(i, dist, nextHop);
 }
@@ -80,15 +83,11 @@ void printLSRTable(int src, const vector<int>& dist, const vector<int>& prev) {
     cout << "Dest\tCost\tNext Hop\n";
     for (int i = 0; i < dist.size(); ++i) {
         if (i == src) continue;
-        cout << i << "\t" << (dist[i] == INF ? INF : dist[i]) << "\t";
+        cout << i << "\t" << dist[i] << "\t";
         int hop = i;
-        // backtrack to find next hop
-        while (prev[hop] != src && prev[hop] != -1) {
+        while (prev[hop] != src && prev[hop] != -1)
             hop = prev[hop];
-        }
-        if (prev[hop] == -1) cout << "-";
-        else cout << hop;
-        cout << endl;
+        cout << (prev[hop] == -1 ? -1 : hop) << endl;
     }
     cout << endl;
 }
@@ -101,13 +100,15 @@ void simulateLSR(const vector<vector<int>>& graph) {
         vector<bool> visited(n, false);
         dist[src] = 0;
 
-        // Min-heap priority queue: (distance, node)
+        // min-heap priority queue: (distance, node)
         priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> pq;
         pq.push(make_pair(0, src));
 
         // Dijkstra's algorithm
         while (!pq.empty()) {
-            pair<int,int> top = pq.top(); pq.pop();
+            pair<int,int> top = pq.top();
+            pq.pop();
+            
             int d = top.first;
             int u = top.second;
             if (visited[u]) continue;
