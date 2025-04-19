@@ -103,7 +103,7 @@ int main() {
 
         if (data_size < 0) {
             if (errno == EWOULDBLOCK || errno == EAGAIN) {  // timeout
-                std::cerr << "[-] TIMED OUT" << std::endl;
+                std::cerr << "[-] Response from server timed out." << std::endl;
                 exit(EXIT_FAILURE);
             } else { // some other error
                 perror("recv failed");

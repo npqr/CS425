@@ -1,6 +1,4 @@
-# TCP Handshake Assignment
-
-This project implements the client side of a simplified TCP three-way handshake using raw sockets in C++. The goal was to manually construct packet headers for SYN, SYN-ACK, and ACK messages, thereby gaining a deeper understanding of TCP connection establishment.
+# CS425 A3: TCP Handshake Assignment
 
 ## Compilation & Running the Code
 
@@ -31,9 +29,7 @@ make all
 ## Design Decisions
 
 - Implemented using raw sockets to allow complete control over TCP packet fields to simulate TCP packets.
-
 - A 5-second timeout is added when waiting for the SYN-ACK packet. This prevents the client from blocking indefinitely if the response is not received.
-
 - We are assuming that both the client and server are running on the same machine. The server is set to listen on port 12345 while the client listens on port 54321.
 
 ## Team Members
