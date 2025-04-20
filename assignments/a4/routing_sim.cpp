@@ -51,10 +51,11 @@ void simulateDVR(const vector<vector<int>>& graph) {
         for (int u = 0; u < n; ++u) {
             for (int v = 0; v < n; ++v) {
                 for (int w = 0; w < n; ++w) {
-                    if (dist[u][v] + graph[v][w] < dist[u][w]) {
+                    int newCost = graph[u][v] + dist[v][w];
+                    if (newCost < dist[u][w]) {
                         // update distance and next hop
-                        newDist[u][w] = dist[u][v] + graph[v][w];
-                        newNextHop[u][w] = nextHop[u][v];
+                        newDist[u][w] = newCost;
+                        newNextHop[u][w] = v;
                         updated = true;
                     }
                 }
